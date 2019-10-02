@@ -52,5 +52,3 @@ class WindPipe:
             audio = self.listen()
             self.speak("Vent")
             self.speak(self.recognize(audio))
-
-w = WindPipe()
