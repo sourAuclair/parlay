@@ -9,17 +9,15 @@ import gtts
 from io import BytesIO
 
 def explicit():
-	from google.cloud import storage
+	from google.oauth2 import service_account
 
-	storage_client = storage.Client.from_service_account_json('Cogitron-a654d28c552f.json')
+	return service_account.Credentials.from_service_account_file('C:/Users/Johan/Documents/GCloud/Cogitron-3673ea643ce9.json')
 
-	buckets = list(storage_client.list_buckets())
-	print(buckets)
-
-def synthesize(text):
+def synthesize(text, credential):
+	print("Synthesizing")
 	out_file = 'output.mp3'
 	from google.cloud import texttospeech
-	client = texttospeech.TextToSpeechClient()
+	client = texttospeech.TextToSpeechClient(credentials = credential)
 
 	input_text = texttospeech.types.SynthesisInput(text=text)
 
@@ -34,9 +32,10 @@ def synthesize(text):
 
 	with open(out_file, 'wb') as out:
 		out.write(response.audio_content)
+		print("Done synthesizing")
 	return out_file
 
-with open('Cogitron-a654d28c552f.json', 'r') as file:
+with open('C:/Users/Johan/Documents/GCloud/Cogitron-3673ea643ce9.json', 'r') as file:
 	credential = file.read()
 
 while True:
@@ -55,7 +54,7 @@ while True:
 			print("Request error {0}".format(e))
 
 		if text:
-			audio_file = synthesize(text)
+			audio_file = synthesize(text, credential)
 			audio = AudioSegment.from_mp3(audio_file)
 			play(audio)
 
