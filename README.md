@@ -10,8 +10,3 @@ Written in Python 3.7.4
 * PyAudio
 * pydub
 * gtts
-
-```python
-inst = WindPipe()
-inst.run()
-```
