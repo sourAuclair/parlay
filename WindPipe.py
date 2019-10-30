@@ -19,24 +19,32 @@ class WindPipe:
             print("Invalid language code")
 
     def calibrate_recognizer(self):
-        self.recognizer.energy_threshold = 50 # Energy threshold sets the threshold for when audio is considered speech.
-        self.recognizer.pause_threshold = 0.5 # Sets the number of seconds that determines if a spoken phrase is considered complete.
+        self.recognizer.energy_threshold = 70 # Energy threshold sets the threshold for when audio is considered speech.
+        self.recognizer.pause_threshold = 1 # Sets the number of seconds that determines if a spoken phrase is considered complete.
         self.recognizer.non_speaking_duration = 0.5 # Sets the number of seconds of non-speaking audio to keep on both sides of recording.
         with self.mic as source:
             self.recognizer.adjust_for_ambient_noise(source)
 
-    def listen(self):
+    def listen(self, time_limit = None, timeout = None):
         with self.mic as source:
-            return self.recognizer.listen(source) # Returns an instance of AudioData from SpeechRecognition, to be given as parameter to recognize
+            try:
+                # Returns 1 to signal that the function ``speech_recognition.listen()`` did not time out,
+                # and an instance of AudioData from SpeechRecognition which can be passed to ``recognize``
+                return [1, self.recognizer.listen(source, timeout = timeout, phrase_time_limit = time_limit)]
+            except sr.WaitTimeoutError:
+                # Returns 0 to signal that the function ``speech_recognition.listen()`` did time out,
+                # and a descriptive string.
+                return [0, "Timeout while waiting for sound"]
+
 
     def recognize(self, audio_data):
         try:
-            # recognize_google takes a key as an optional parameter. It uses a default key if none is given.
+            # ``speech_recognition.recognize_google()`` takes a key as an optional parameter. It uses a default key if none is given.
             return self.recognizer.recognize_google(audio_data, language = self.language) # Returns a string containing the spoken phrase given as audio_data
         except sr.UnknownValueError:
-            return "Jeg forstår ikke hva du sa."
+            return "Google Speech Recognition does not understand what you said."
         except sr.RequestError as e:
-            return "Jeg klarte ikke å koble til Google Speech Recognition tjenesten; {0}".format(e)
+            return "Could not request results from Google Speech Recognition service; {0}".format(e)
 
     def speak(self, text):
         output_file_object = BytesIO()
@@ -45,10 +53,3 @@ class WindPipe:
         output_file_object.seek(0)
         output_audio = AudioSegment.from_file(output_file_object, format = 'mp3')
         play(output_audio)
-
-    def run(self):
-        self.calibrate_recognizer()
-        while True:
-            audio = self.listen()
-            self.speak("Vent")
-            self.speak(self.recognize(audio))
