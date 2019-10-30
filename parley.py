@@ -8,7 +8,7 @@ from pydub.playback import play
 import gtts
 from io import BytesIO
 
-class WindPipe:
+class Parley:
     def __init__(self, lang = 'no'):
         self.recognizer = sr.Recognizer()
         self.mic = sr.Microphone()
