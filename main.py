@@ -1,7 +1,7 @@
 from parlay import Parlay
 
 def main():
-	w = Parley()
+	w = Parlay()
 	w.calibrate_recognizer()
 	while True:
 		[ret_code, ret_data] = w.listen(timeout = 0.5, time_limit = 3)
