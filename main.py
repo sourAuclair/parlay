@@ -1,4 +1,4 @@
-from Parley import Parley
+from parlay import Parlay
 
 def main():
 	w = Parley()
