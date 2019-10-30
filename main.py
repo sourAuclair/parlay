@@ -1,7 +1,7 @@
-from WindPipe import WindPipe
+from Parley import Parley
 
 def main():
-	w = WindPipe()
+	w = Parley()
 	w.calibrate_recognizer()
 	while True:
 		[ret_code, ret_data] = w.listen(timeout = 0.5, time_limit = 3)
