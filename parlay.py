@@ -18,7 +18,7 @@ class Parlay:
     def __init__(self, lang = 'no'):
         self.recognizer = sr.Recognizer()
         self.mic = sr.Microphone()
-        # a list containing the recorded audio files, acting as a queue. 
+        # a list containing the recorded audio files, acting as a queue.
         self.audio_queue = []
         self.recognize_queue = []
         self.action_queue = []
@@ -77,7 +77,7 @@ class Parlay:
 
         The ``callback`` parameter is a function that should accept two parameters - the ``recognizer_instance``, and an ``AudioData`` instance representing the captured audio. Note that ``callback`` function will be called from a non-main thread.
         """
-        
+
         running = [True]
 
         def threaded_listen():
@@ -145,7 +145,7 @@ class Parlay:
                 # Checking if the recognizer thread has finished
                 if len(self.recognized_text) > 0:
                     print(self.recognized_text)
-        
+
     def thr_recognize(self, action_list, audio):
         try:
             # ``speech_recognition.recognize_google()`` takes a key as an optional parameter. It uses a default key if none is given.
@@ -192,25 +192,18 @@ class Parlay:
             print("power on")
             listen_thread = executor.submit(self.thr_listen(self.action_queue, time_limit, timeout))
             while True:
-                if listen_thread.done():
-                    listen_thread = executor.submit(self.thr_listen(self.action_queue, time_limit, timeout))
-                if self.action_queue:
-                    action = self.action_queue.pop(0)
-                    # TOLK
-                    if action[0] == 1:
-                        print("tolk")
-                        tolk_thread = executor.submit(self.tolk.thr_extract_commands(self.action_queue, action[1]))
-                    # PHRASE
-                    elif action[0] == 2:
-                        print("kommando: " + action[1])
-                    # RECOGNIZE
-                    elif action[0] == 3:
-                        print("recognize")
-                        recognize_thread = executor.submit(self.thr_recognize(self.action_queue, action[1]))
-
-
-
-
-
-
-
+                # if listen_thread.done():
+                #     listen_thread = executor.submit(self.thr_listen(self.action_queue, time_limit, timeout))
+                # if self.action_queue:
+                #     action = self.action_queue.pop(0)
+                #     # TOLK
+                #     if action[0] == 1:
+                #         print("tolk")
+                #         tolk_thread = executor.submit(self.tolk.thr_extract_commands(self.action_queue, action[1]))
+                #     # PHRASE
+                #     elif action[0] == 2:
+                #         print("kommando: " + action[1])
+                #     # RECOGNIZE
+                #     elif action[0] == 3:
+                #         print("recognize")
+                #         recognize_thread = executor.submit(self.thr_recognize(self.action_queue, action[1]))
