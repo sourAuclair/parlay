@@ -9,6 +9,10 @@ from pydub import AudioSegment
 from pydub.playback import play
 import gtts
 from io import BytesIO
+from tolkien import Tolkien
+import concurrent.futures
+
+corpus = "   ______                           \n  / ____/___  _________  __  _______\n / /   / __ \\/ ___/ __ \\/ / / / ___/\n/ /___/ /_/ / /  / /_/ / /_/ (__  ) \n\\____/\\____/_/  / .___/\\__,_/____/  \n               /_/                  "
 
 class Parlay:
     def __init__(self, lang = 'no'):
@@ -16,6 +20,9 @@ class Parlay:
         self.mic = sr.Microphone()
         # a list containing the recorded audio files, acting as a queue. 
         self.audio_queue = []
+        self.recognize_queue = []
+        self.action_queue = []
+        self.tolk = Tolkien()
 
         # Variable used with the threading functions
         self.recognized_text = ""
@@ -28,7 +35,7 @@ class Parlay:
 
     def calibrate_recognizer(self):
         self.recognizer.energy_threshold = 150 # Energy threshold sets the threshold for when audio is considered speech.
-        self.recognizer.pause_threshold = 1 # Sets the number of seconds that determines if a spoken phrase is considered complete.
+        self.recognizer.pause_threshold = 0.5 # Sets the number of seconds that determines if a spoken phrase is considered complete.
         self.recognizer.non_speaking_duration = 0.5 # Sets the number of seconds of non-speaking audio to keep on both sides of recording.
         with self.mic as source:
             self.recognizer.adjust_for_ambient_noise(source)
@@ -143,15 +150,18 @@ class Parlay:
         try:
             # ``speech_recognition.recognize_google()`` takes a key as an optional parameter. It uses a default key if none is given.
             string_of_text = self.recognizer.recognize_google(audio, language = self.language)
-            action_list.insert(0, [1, string_of_text])
+            print("tolk")
+            self.tolk.extract_commands(string_of_text)
+            action_list.insert(0, [2, self.tolk.stringify_commands()])
         except sr.UnknownValueError:
-            print("Google Speech Recognition does not understand what you said.")
+            pass
+            # print("Jeg forstod ikke det.")
             # action_list.append(["phrase", "Google Speech Recognition does not understand what you said."])
         except sr.RequestError as e:
             print("Could not request results from Google Speech Recognition service; {0}".format(e))
             # action_list.append(["phrase", "Could not request results from Google Speech Recognition service; {0}".format(e)])
         except IndexError:
-            print("No audio data to recognize.")
+            print("Ingen data.")
             # action_list.append(["phrase", "No audio data to recognize."])
 
     def recognize(self):
@@ -174,3 +184,33 @@ class Parlay:
         output_file_object.seek(0)
         output_audio = AudioSegment.from_file(output_file_object, format = 'mp3')
         play(output_audio)
+
+    def run(self, time_limit = None, timeout = None):
+        print(corpus)
+        self.calibrate_recognizer()
+        with concurrent.futures.ThreadPoolExecutor(max_workers = 5) as executor:
+            print("power on")
+            listen_thread = executor.submit(self.thr_listen(self.action_queue, time_limit, timeout))
+            while True:
+                if listen_thread.done():
+                    listen_thread = executor.submit(self.thr_listen(self.action_queue, time_limit, timeout))
+                if self.action_queue:
+                    action = self.action_queue.pop(0)
+                    # TOLK
+                    if action[0] == 1:
+                        print("tolk")
+                        tolk_thread = executor.submit(self.tolk.thr_extract_commands(self.action_queue, action[1]))
+                    # PHRASE
+                    elif action[0] == 2:
+                        print("kommando: " + action[1])
+                    # RECOGNIZE
+                    elif action[0] == 3:
+                        print("recognize")
+                        recognize_thread = executor.submit(self.thr_recognize(self.action_queue, action[1]))
+
+
+
+
+
+
+
