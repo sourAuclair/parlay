@@ -34,6 +34,24 @@ class Tolkien:
 						number_of_correct_lemmas += 1
 		# self.certainty_of_commands_parsing = number_of_correct_lemmas / number_of_commands
 
+	def thr_extract_commands(self, action_list, sentence):
+		self.commands_in_text = []
+		sent = self.nlp(sentence)
+		number_of_commands = 0
+		number_of_correct_lemmas = 0
+		for token in sent:
+			if token.pos_ == "NUM":
+				self.commands_in_text.append(token.text)
+				continue
+			for com in self.commands_structure:
+				if token.lemma_.capitalize() == com:
+					number_of_commands += 1
+					self.commands_in_text.append(com)
+					if token.pos_ == self.commands_structure.get(com)[0]:
+						number_of_correct_lemmas += 1
+		# self.certainty_of_commands_parsing = number_of_correct_lemmas / number_of_commands
+		action_list.insert(0, [2, self.stringify_commands()])
+
 	def pos_info_dump(self, sentence):
 		sent = self.nlp(sentence)
 		for token in sent:
@@ -48,6 +66,11 @@ class Tolkien:
 			string_of_commands += (com + " ")
 		return string_of_commands
 
+	def format_command_list(self):
+		string_of_commands = ""
+		for com in self.commands_in_text:
+			string_of_commands += (com + ";")
+		return string_of_commands
 
 
 commands = {
