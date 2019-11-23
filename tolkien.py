@@ -75,6 +75,7 @@ class Tolkien:
 
 commands = {
 	'no' : {
+		"Korpus" : [ "NOUN", 0],
 		"Hei" : [ "INTJ", 0],
 		"Kjøre" : [ "VERB", 0 ],
 		"Stoppe" : [ "VERB", 0],
